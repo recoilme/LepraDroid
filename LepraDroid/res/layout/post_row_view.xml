@@ -4,31 +4,31 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:padding="@dimen/standard_padding"
+    android:background="#e7e7e7"
     android:minHeight="67dip" >
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/main"
         android:paddingBottom="7dip"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:gravity="center_vertical"
 	    android:layout_width="fill_parent"
 	    android:layout_height="fill_parent" >
 	    <ImageView
 	        android:id="@+id/image"
-	        android:layout_width="60dip"
-	        android:layout_height="60dip"
-	        android:adjustViewBounds="true"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+            android:padding="5dp"
 	        android:visibility="gone"
-	        android:scaleType="center"
 	        android:src="@drawable/ic_launcher" />
 	    <TextView
 	        android:id="@+id/text"
-	        android:textSize="12sp"
+	        android:textSize="16sp"
 	        android:paddingLeft="@dimen/standard_padding"
 	        android:layout_width="fill_parent"
 	        android:layout_height="fill_parent"
 	        android:gravity="left|center_vertical"
-	        android:textStyle="bold"
-	        android:maxLines="4"/>
+
+	        android:maxLines="20"/>
     </LinearLayout>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -40,7 +40,7 @@
 	        android:id="@+id/author"
 	        android:layout_width="fill_parent"
 	        android:layout_height="fill_parent"
-	        android:textSize="9sp"
+	        android:textSize="14sp"
 	        android:ellipsize="end"
 	        android:textColor="@android:color/secondary_text_light"
 	        android:maxLines="2"/>
@@ -57,7 +57,7 @@
 		        android:layout_height="wrap_content"
 		        android:layout_alignParentLeft="true"
 		        android:gravity="center_horizontal|center_vertical"
-		        android:textSize="8sp"
+		        android:textSize="11sp"
 		        android:textColor="@android:color/secondary_text_light"/>
             <ImageView
                 android:id="@+id/stars"
@@ -81,7 +81,7 @@
 		        android:layout_alignParentRight="true"
 		        android:layout_alignParentBottom="true"
 		        android:gravity="center_horizontal|center_vertical"
-		        android:textSize="8sp"
+		        android:textSize="11sp"
 		        android:textStyle="bold"
 		        android:textColor="@android:color/secondary_text_light"/>
 		 </RelativeLayout>

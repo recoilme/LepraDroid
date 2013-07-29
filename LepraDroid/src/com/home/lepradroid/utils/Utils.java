@@ -408,6 +408,7 @@ public class Utils
         {
             view.setTextSize(view.getTextSize() * 1.5f);
         }
+
     }
     
     public static void setWebViewFontSize(WebView view)

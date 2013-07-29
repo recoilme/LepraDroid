@@ -1,10 +1,5 @@
 package com.home.lepradroid;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
 import android.content.Context;
 import android.graphics.Typeface;
 import android.text.Html;
@@ -17,12 +12,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
+import com.androidquery.AQuery;
+import com.androidquery.util.AQUtility;
 import com.home.lepradroid.commons.Commons;
 import com.home.lepradroid.objects.BaseItem;
 import com.home.lepradroid.objects.Post;
 import com.home.lepradroid.utils.ImageLoader;
 import com.home.lepradroid.utils.Utils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 class PostsAdapter extends ArrayAdapter<BaseItem>
 {
@@ -30,6 +31,7 @@ class PostsAdapter extends ArrayAdapter<BaseItem>
     private List<BaseItem>      posts           = Collections.synchronizedList(new ArrayList<BaseItem>());
     private LayoutInflater      aInflater;
     private ImageLoader         imageLoader;
+    private AQuery listAq;
             
     public PostsAdapter(Context context, UUID groupId, int textViewResourceId,
             ArrayList<BaseItem> posts)
@@ -39,6 +41,7 @@ class PostsAdapter extends ArrayAdapter<BaseItem>
         this.groupId = groupId;
         imageLoader = new ImageLoader(LepraDroidApplication.getInstance());
         aInflater = LayoutInflater.from(getContext());
+        listAq = new AQuery(context);
     }
 
     public int getCount() 
@@ -75,62 +78,48 @@ class PostsAdapter extends ArrayAdapter<BaseItem>
         
         if(post != null)
         {
-            convertView = aInflater.inflate(R.layout.post_row_view, parent, false);
-            
-            ImageView imageView = (ImageView)convertView.findViewById(R.id.image);
-            TextView textView = (TextView)convertView.findViewById(R.id.text);
+            if (convertView==null) {
+                convertView = aInflater.inflate(R.layout.post_row_view, parent, false);
+
+            }
+
+            final AQuery aq = listAq.recycle(convertView);
             
             if(!TextUtils.isEmpty(post.getImageUrl()))
             {
-                imageView.setVisibility(View.VISIBLE);
-                imageLoader.DisplayImage(post.getImageUrl(), imageView);
+                AQUtility.debug(post.getImageUrl());
+                aq.id(R.id.image).visible().image(post.getImageUrl(),true,false,320,0,null,AQuery.FADE_IN_NETWORK, AQuery.ANCHOR_DYNAMIC);
             }
             else
             {
-                textView.setPadding(0, textView.getPaddingTop(), textView.getPaddingRight(), textView.getPaddingBottom());
+                aq.id(R.id.image).gone();
             }
             
             String text = post.getText();
-            textView.setText(TextUtils.isEmpty(text) ? "..." : text);
-            if(!Utils.isNormalFontSize())
-            {
-                RelativeLayout root = (RelativeLayout)convertView.findViewById(R.id.root);
-                root.setPadding(root.getPaddingLeft() * 2, root.getPaddingTop(), root.getPaddingRight() * 2, root.getPaddingBottom() * 2);
-                
-                ViewGroup.LayoutParams params = imageView.getLayoutParams();
-                params.width = params.width * 3;
-                params.height = params.height * 3;
-                imageView.setLayoutParams(params);
-                
-                textView.setPadding (textView.getPaddingLeft() * 2, textView.getPaddingTop(), textView.getPaddingRight(), textView.getPaddingBottom());
-                textView.setTypeface(null, Typeface.NORMAL);
-                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getContext().getResources().getDimensionPixelSize(R.dimen.comment_font_size));
-            }
-            Utils.setTextViewFontSize(textView);
+            aq.id(R.id.text).getTextView().setText(TextUtils.isEmpty(text) ? " ..." : text);
+
             
-            TextView authorView = (TextView)convertView.findViewById(R.id.author);
+            final TextView authorView = aq.id(R.id.author).getTextView();
             authorView.setText(Html.fromHtml(post.getSignature()));
-            Utils.setTextViewFontSize(authorView);
             
-            TextView commentsView = (TextView)convertView.findViewById(R.id.comments);
+            final TextView commentsView = aq.id(R.id.comments).getTextView();
             commentsView.setText(Utils.getCommentsStringFromPost(post));
-            Utils.setTextViewFontSize(commentsView);
+
+            final ImageView stars = aq.id(R.id.stars).getImageView();
+            stars.setVisibility(View.GONE);
 
             if(post.isGolden())
             {
-                ImageView stars = (ImageView)convertView.findViewById(R.id.stars);
                 stars.setImageResource(R.drawable.ic_stars);
                 stars.setVisibility(View.VISIBLE);
             }
             else if(post.isSilver())
             {
-                ImageView stars = (ImageView)convertView.findViewById(R.id.stars);
                 stars.setImageResource(R.drawable.ic_wasstars);
                 stars.setVisibility(View.VISIBLE);
             }
             
-            TextView ratingView = (TextView)convertView.findViewById(R.id.rating);
-            Utils.setTextViewFontSize(ratingView);
+            final TextView ratingView = aq.id(R.id.rating).getTextView();
             if(groupId.equals(Commons.INBOX_POSTS_ID) || post.isVoteDisabled())
                 ratingView.setVisibility(View.GONE);
             else

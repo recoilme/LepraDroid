@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import com.androidquery.util.AQUtility;
 import com.home.lepradroid.base.BaseActivity;
 import com.home.lepradroid.base.BaseView;
 import com.home.lepradroid.commons.Commons;
@@ -40,6 +41,7 @@ public class PostsScreen extends BaseView implements CommentsUpdateListener, Pos
     private boolean     lastPageLoadedSuccessful = false;
 
     public PostsAdapter adapter;
+    public static final boolean DEBUG = true;
     
     public PostsScreen(final Context context, final UUID groupId, final String url, Commons.PostsType type, String parentTitle)
     {                                                                            
@@ -50,6 +52,7 @@ public class PostsScreen extends BaseView implements CommentsUpdateListener, Pos
         this.parentTitle = parentTitle;
         this.url = url;
         this.type = type;
+        AQUtility.setDebug(DEBUG);
         
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);

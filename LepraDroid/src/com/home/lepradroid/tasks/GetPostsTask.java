@@ -138,7 +138,7 @@ public class GetPostsTask extends BaseTask
             boolean lastElement = false;
 
             String postOrd = "<div class=\"post ";
-            String senchaPrefix = String.format("http://src.sencha.io/%d/%d/", imageSize, imageSize);
+            String senchaPrefix = "";//String.format("http://src.sencha.io/%d/%d/", imageSize, imageSize);
             String html = ServerWorker.Instance().getContent(url + getPageNum());
 
             if(refresh)

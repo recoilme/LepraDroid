@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.preference.Preference;
 import android.util.AttributeSet;
+import com.androidquery.util.AQUtility;
 import com.home.lepradroid.LepraDroidApplication;
 import com.home.lepradroid.R;
 import com.home.lepradroid.utils.FileCache;
@@ -77,6 +78,8 @@ public class CachePreference extends Preference
             if(clearCache)
             {
                 cache.clear();
+
+
             }
 
             if(isCancelled())
