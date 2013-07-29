@@ -12,6 +12,7 @@ public class Comment extends BaseItem
     private boolean  isNew               = false;
     private boolean  isPostAuthor        = false;
     private boolean  isOnlyText          = false;
+    private String   firstImage          = "";
     
     public String getParentLepraId()
     {
@@ -83,5 +84,13 @@ public class Comment extends BaseItem
     public void setOnlyText(boolean isOnlyText)
     {
         this.isOnlyText = isOnlyText;
+    }
+
+    public String getFirstImage() {
+        return firstImage;
+    }
+
+    public void setFirstImage(String firstImage) {
+        this.firstImage = firstImage;
     }
 }

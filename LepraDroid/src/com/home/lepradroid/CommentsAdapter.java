@@ -1,5 +1,9 @@
 package com.home.lepradroid;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,9 +12,17 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.Html;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
+import android.util.Base64;
+import android.util.DisplayMetrics;
+import android.util.Pair;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -18,10 +30,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
-import android.widget.TextView;
+import android.widget.*;
 
+import com.androidquery.AQuery;
+import com.androidquery.callback.AjaxCallback;
+import com.androidquery.callback.AjaxStatus;
+import com.androidquery.util.AQUtility;
 import com.home.lepradroid.commons.Commons;
 import com.home.lepradroid.commons.Commons.RateValueType;
 import com.home.lepradroid.interfaces.ExitListener;
@@ -33,6 +47,9 @@ import com.home.lepradroid.tasks.RateItemTask;
 import com.home.lepradroid.tasks.TaskWrapper;
 import com.home.lepradroid.utils.LinksCatcher;
 import com.home.lepradroid.utils.Utils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 class CommentsAdapter extends ArrayAdapter<BaseItem> implements ExitListener
 {
@@ -43,6 +60,8 @@ class CommentsAdapter extends ArrayAdapter<BaseItem> implements ExitListener
     private int                 commentLevelIndicatorLength
                                                     = 0;
     private LayoutInflater      aInflater           = null;
+    private AQuery listAq;
+
     
     private void OnLongClick()
     {
@@ -99,7 +118,8 @@ class CommentsAdapter extends ArrayAdapter<BaseItem> implements ExitListener
         super(context, textViewResourceId, comments);
         this.comments = comments;
         this.post = post;
-        
+        listAq = new AQuery(context);
+
         aInflater = LayoutInflater.from(getContext());
         
         commentLevelIndicatorLength = Utils.getCommentLevelIndicatorLength();
@@ -178,8 +198,11 @@ class CommentsAdapter extends ArrayAdapter<BaseItem> implements ExitListener
         
         if(comment != null)
         {
-            convertView = aInflater.inflate(R.layout.comments_row_view, parent, false);
-            
+            //if (convertView==null) {
+                convertView = aInflater.inflate(R.layout.comments_row_view, parent, false);
+            //}
+
+            final AQuery aq = listAq.recycle(convertView);
             short level = comment.getLevel();
             
             FrameLayout root = (FrameLayout)convertView.findViewById(R.id.root);
@@ -192,55 +215,53 @@ class CommentsAdapter extends ArrayAdapter<BaseItem> implements ExitListener
                 root.setPadding(root.getPaddingLeft() + (level * commentLevelIndicatorLength), root.getPaddingTop(), root.getPaddingRight(), root.getPaddingBottom());
                 content.setPadding(content.getPaddingLeft() * 2, content.getPaddingTop(), content.getPaddingRight(), content.getPaddingBottom());
             }
-            
-            if(!comment.isOnlyText())
-            {
-                FrameLayout webContainer = (FrameLayout) convertView.findViewById(R.id.web_container);
-                webContainer.setVisibility(View.VISIBLE);
-                WebView webView = new WebView(getContext());
-                webContainer.addView(webView);
-                //webView.setVerticalFadingEdgeEnabled(true);
-                //webView.setFadingEdgeLength(Utils.getStandardPedding());
-                webView.setBackgroundColor(0x00000000);
-                webView.setVisibility(View.VISIBLE);
-                webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-                webView.setWebViewClient(LinksCatcher.Instance());
-                WebSettings webSettings = webView.getSettings();
-                webSettings.setDefaultFontSize(Commons.WEBVIEW_DEFAULT_FONT_SIZE);
-                webSettings.setJavaScriptEnabled(true);
-                webView.loadDataWithBaseURL("", Commons.WEBVIEW_HEADER + "<body style=\"margin: 0; padding: 0\">" + comment.getHtml() + "</body>", "text/html", "UTF-8", null);
-                webView.addJavascriptInterface(ImagesWorker.Instance(), "ImagesWorker");
-                webView.setOnTouchListener(new View.OnTouchListener()
-                {
-                    @Override
-                    public boolean onTouch(View arg0, MotionEvent event)
-                    {
-                        commentPos = position;
-                        return gestureDetector.onTouchEvent(event);
-                    }
-                });
-                
-                Utils.setWebViewFontSize(webView);
+
+            TextView textOnly = (TextView)convertView.findViewById(R.id.textOnly);
+            textOnly.setMovementMethod(LinkMovementMethod.getInstance());
+
+            if (!TextUtils.isEmpty(comment.getFirstImage())) {
+                aq.id(R.id.comment_image).visible().image(comment.getFirstImage(),true,false,320,0,null,AQuery.FADE_IN_NETWORK, AQuery.ANCHOR_DYNAMIC);
             }
             else
             {
-                TextView textOnly = (TextView)convertView.findViewById(R.id.textOnly);
-                textOnly.setVisibility(View.VISIBLE);
-                textOnly.setMovementMethod(LinkMovementMethod.getInstance());
-                textOnly.setText(Html.fromHtml(comment.getHtml()));
-                textOnly.setOnLongClickListener(new View.OnLongClickListener()
-                {
-                    @Override
-                    public boolean onLongClick(View v)
-                    {
-                        commentPos = position;
-                        OnLongClick();
-                        return false;
-                    }
-                });
-                
-                Utils.setTextViewFontSize(textOnly);
+                aq.id(R.id.comment_image).gone();
             }
+            //вырезаем картинки
+            textOnly.setText(Html.fromHtml(comment.getHtml(),new Html.ImageGetter() {
+                @Override
+                public Drawable getDrawable(String source) {
+                    try {
+
+                        //ебать что в сурсах прописано
+                        //сирани бэйс64?!11
+
+                        byte[] data;
+                        data = Base64.decode(/*source*/"", Base64.CRLF);
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        Drawable d = new BitmapDrawable( bitmap);
+                        d.setBounds(0,0,0,0);
+                        //заглушка чтоб рамки не было
+                        return d;
+
+                    }
+                    catch (Exception e){
+                        return null;
+                    }
+                }
+            },null));
+
+            textOnly.setOnLongClickListener(new View.OnLongClickListener()
+            {
+                @Override
+                public boolean onLongClick(View v)
+                {
+                    commentPos = position;
+                    OnLongClick();
+                    return false;
+                }
+            });
+
+            //Utils.setTextViewFontSize(textOnly);
 
             root.setOnLongClickListener(new View.OnLongClickListener()
             {
@@ -252,16 +273,17 @@ class CommentsAdapter extends ArrayAdapter<BaseItem> implements ExitListener
                     return false;
                 }
             });
+
             
             TextView author = (TextView)convertView.findViewById(R.id.author);
             author.setText(Html.fromHtml(comment.getSignature()));
-            Utils.setTextViewFontSize(author);
+            //Utils.setTextViewFontSize(author);
             
             TextView rating = (TextView)convertView.findViewById(R.id.rating);
             if(!post.isInbox())
             {
                 rating.setText(Utils.getRatingStringFromBaseItem(comment, post.getVoteWeight()));
-                Utils.setTextViewFontSize(rating);
+                //Utils.setTextViewFontSize(rating);
             }
             else
                 rating.setVisibility(View.GONE);   
@@ -285,4 +307,5 @@ class CommentsAdapter extends ArrayAdapter<BaseItem> implements ExitListener
     {
         // TODO Auto-generated method stub
     }
+
 }

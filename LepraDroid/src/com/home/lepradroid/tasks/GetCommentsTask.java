@@ -384,8 +384,9 @@ public class GetCommentsTask extends BaseTask
             String src = image.attr("src");
             if(isImagesEnabled && !TextUtils.isEmpty(src))
             {
+                if (imageNum==0) comment.setFirstImage(src);
                 String id = "img" + Integer.valueOf(imageNum).toString();  
-                
+
                 if(!image.parent().tag().getName().equalsIgnoreCase("a"))
                     image.wrap("<a href=" + "\"" + src + "\"></a>");
                 
@@ -405,7 +406,7 @@ public class GetCommentsTask extends BaseTask
                 image.remove();
         }
         
-        comment.setHtml(Utils.getImagesStub(imgs, comment.getLevel()) + Utils.wrapLepraTags(element));
+        comment.setHtml(/*Utils.getImagesStub(imgs, comment.getLevel()) +*/ Utils.wrapLepraTags(element));
         if(     imgs.isEmpty() && 
                 !Utils.isContainExtraTagsForWebView(comment.getHtml()))
         {
