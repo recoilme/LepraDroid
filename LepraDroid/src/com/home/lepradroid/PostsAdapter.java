@@ -1,6 +1,7 @@
 package com.home.lepradroid;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.text.Html;
 import android.text.TextUtils;
@@ -76,60 +77,60 @@ class PostsAdapter extends ArrayAdapter<BaseItem>
     {
         Post post = (Post)getItem(position);
         
-        if(post != null)
-        {
-            if (convertView==null) {
+
+        if (convertView==null) {
+            if(post != null)
                 convertView = aInflater.inflate(R.layout.post_row_view, parent, false);
-
-            }
-
-            final AQuery aq = listAq.recycle(convertView);
-            
-            if(!TextUtils.isEmpty(post.getImageUrl()))
-            {
-                AQUtility.debug(post.getImageUrl());
-                aq.id(R.id.image).visible().image(post.getImageUrl(),true,false,320,0,null,AQuery.FADE_IN_NETWORK, AQuery.ANCHOR_DYNAMIC);
-            }
             else
-            {
-                aq.id(R.id.image).gone();
-            }
-            
-            String text = post.getText();
-            aq.id(R.id.text).getTextView().setText(TextUtils.isEmpty(text) ? " ..." : text);
+                convertView =  aInflater.inflate(R.layout.footer_view, null);
 
-            
-            final TextView authorView = aq.id(R.id.author).getTextView();
-            authorView.setText(Html.fromHtml(post.getSignature()));
-            
-            final TextView commentsView = aq.id(R.id.comments).getTextView();
-            commentsView.setText(Utils.getCommentsStringFromPost(post));
+        }
 
-            final ImageView stars = aq.id(R.id.stars).getImageView();
-            stars.setVisibility(View.GONE);
-
-            if(post.isGolden())
-            {
-                stars.setImageResource(R.drawable.ic_stars);
-                stars.setVisibility(View.VISIBLE);
-            }
-            else if(post.isSilver())
-            {
-                stars.setImageResource(R.drawable.ic_wasstars);
-                stars.setVisibility(View.VISIBLE);
-            }
-            
-            final TextView ratingView = aq.id(R.id.rating).getTextView();
-            if(groupId.equals(Commons.INBOX_POSTS_ID) || post.isVoteDisabled())
-                ratingView.setVisibility(View.GONE);
-            else
-                ratingView.setText(Utils.getRatingStringFromBaseItem(post, post.getVoteWeight()));
-            
+        final AQuery aq = listAq.recycle(convertView);
+        if (null == post) {
             return convertView;
+        }
+
+        String tbUrl = ""+post.getImageUrl();
+        if(!TextUtils.isEmpty(""+post.getImageUrl()))
+        {
+            aq.id(R.id.image).visible().image(post.getImageUrl(),true,true,320,0,null,AQuery.FADE_IN_NETWORK, AQuery.ANCHOR_DYNAMIC);
         }
         else
         {
-            return aInflater.inflate(R.layout.footer_view, null);
+            aq.id(R.id.image).gone();
         }
+
+        String text = post.getText();
+        aq.id(R.id.text).text(TextUtils.isEmpty(text) ? " ..." : text);
+
+
+        //final TextView authorView = aq.id(R.id.author).getTextView();
+        aq.id(R.id.author).text(Html.fromHtml(post.getSignature()));
+
+        //final TextView commentsView = aq.id(R.id.comments).getTextView();
+        aq.id(R.id.comments).text(Utils.getCommentsStringFromPost(post));
+
+        //final ImageView stars = aq.id(R.id.stars).getImageView();
+        aq.id(R.id.stars).visibility(View.GONE);
+
+        if(post.isGolden())
+        {
+            aq.id(R.id.stars).image(R.drawable.ic_stars);
+            aq.id(R.id.stars).visibility(View.VISIBLE);
+        }
+        else if(post.isSilver())
+        {
+            aq.id(R.id.stars).image(R.drawable.ic_wasstars);
+            aq.id(R.id.stars).visibility(View.VISIBLE);
+        }
+
+        //final TextView ratingView = aq.id(R.id.rating).getTextView();
+        if(groupId.equals(Commons.INBOX_POSTS_ID) || post.isVoteDisabled())
+            aq.id(R.id.rating).visibility(View.GONE);
+        else
+            aq.id(R.id.rating).text(Utils.getRatingStringFromBaseItem(post, post.getVoteWeight()));
+
+        return convertView;
     }
 }
