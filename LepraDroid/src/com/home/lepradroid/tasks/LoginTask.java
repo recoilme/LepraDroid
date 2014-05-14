@@ -57,15 +57,14 @@ public class LoginTask extends BaseTask
         try
         {
             String sid = null, uid = null;
-            final Pair<String, Header[]> loginInfo = ServerWorker.Instance().login(Commons.LOGON_PAGE_URL, login, password, captcha, ServerWorker.Instance().getLoginCode());
+            final Pair<String, Header[]> loginInfo = ServerWorker.Instance().login(Commons.AJAX_LOGON_PAGE_URL, login, password, captcha, ServerWorker.Instance().getLoginCode());
             for(Header header : loginInfo.second)
             {
                 //lepro.sid=abadb37b85cd113156aea908ede94f77; lepro.uid=46808;
                 
                 String value = header.getValue();
-                if(value.contains("lepro.save=1"))
-                    logoned = true;
-                else if(value.contains(Commons.COOKIE_SID + "="))
+                //if(value.contains("lepro.save=1"))
+                if(value.contains(Commons.COOKIE_SID + "="))
                 {
                     String[] sidCookie = value.split(";")[0].split("=");
                     if(sidCookie.length > 1)
@@ -78,7 +77,8 @@ public class LoginTask extends BaseTask
                         uid = uidCookie[1];
                 }
             }
-            
+            if (!TextUtils.isEmpty(sid) && !TextUtils.isEmpty(uid) )
+                logoned = true;
             if(!logoned || TextUtils.isEmpty(sid) || TextUtils.isEmpty(uid))
             {
                 final Document document = Jsoup.parse(loginInfo.first);

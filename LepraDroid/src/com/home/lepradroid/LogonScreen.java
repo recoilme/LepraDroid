@@ -121,7 +121,7 @@ public class LogonScreen extends BaseActivity implements CaptchaUpdateListener, 
     
     private void updateCaptcha()
     {
-        pushNewTask(new TaskWrapper(this, new GetCaptchaTask(), Utils.getString(R.string.Captcha_Loading_In_Progress)));
+       // pushNewTask(new TaskWrapper(this, new GetCaptchaTask(), Utils.getString(R.string.Captcha_Loading_In_Progress)));
         captchaImage.setVisibility(View.INVISIBLE);
         progress.setVisibility(View.VISIBLE);
     }

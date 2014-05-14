@@ -173,8 +173,8 @@ public class GetPostsTask extends BaseTask
                         String header = html.substring(0, start);
                         Element content = Jsoup.parse(header);
                         
-                        Element filter = content.getElementById("js-showonindex"); 
-                        SettingsWorker.Instance().saveMainThreshold(filter.attr("value"));
+                        //Element filter = content.getElementById("js-showonindex");
+                        //SettingsWorker.Instance().saveMainThreshold(filter.attr("value"));
                         
                         if(TextUtils.isEmpty(SettingsWorker.Instance().loadVoteWtf()))
                         {
